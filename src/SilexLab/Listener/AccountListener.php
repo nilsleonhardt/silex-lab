@@ -29,15 +29,20 @@ class AccountListener implements EventSubscriberInterface
     public function onKernelRequest(GetResponseEvent $event)
     {
         $request = $event->getRequest();
+
         $defaultAccount = $this->accountProvider->getDefaultAccount();
 
         $token = $request->attributes->get('_account');
+        $this->logger->info("Token", array('token' => $token));
 
         $account = $this->accountProvider->findAccountForToken($token);
 
-        $this->logger->info('Token', array('token' => $token));
+        if (!$account)
+        {
+            $account = $defaultAccount;
+        }
 
-        // TODO: some logic
+        $request->attributes->set('_account', $account);
     }
 
     public static function getSubscribedEvents()
